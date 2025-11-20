@@ -93,6 +93,9 @@ export async function evaluateDOMExpression(
 
   const remainingExpression = expression.slice(targetNodeName.length);
   // TODO: validate remainingExpression to ensure safety
+  if (remainingExpression.length === 0) {
+    return { uids: [nodeManager.setNode(targetNode)] };
+  }
 
   try {
     // cannot use dynamic code eval due to MV3
