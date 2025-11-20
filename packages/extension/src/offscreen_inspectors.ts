@@ -38,9 +38,10 @@ async function processRequest(
     case "getMatchedStyles": {
       const {
         uid,
-        removeUnusedVar = true,
+        selectors,
+        properties,
         appliedOnly = false,
-        filter,
+        removeUnusedVar = true,
       } = request;
       const node = nodeManager.getNode(uid, inspector);
       if (!node) {
@@ -56,9 +57,11 @@ async function processRequest(
       let styles = await node.getMatchedStyles(options);
 
       // Apply filters to reduce response size
-      if (filter) {
-        styles = filterMatchedStyles(styles, filter);
-      }
+      styles = filterMatchedStyles(styles, {
+        selectors,
+        properties,
+        appliedOnly,
+      });
       const toStyleSheetOptions = {
         applied: appliedOnly ? false : true,
         matchedSelectors: true,
@@ -98,8 +101,8 @@ async function processRequest(
       const {
         uid,
         maxDepth = 3,
-        maxLineLength = 1000,
-        maxChars = 500000,
+        maxLineLength = 200,
+        maxChars = 100000,
       } = request;
       const node = nodeManager.getNode(uid, inspector);
       if (!node) {
