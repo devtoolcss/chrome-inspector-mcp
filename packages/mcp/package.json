@@ -1,0 +1,24 @@
+{
+  "name": "@devtoolcss/mcp",
+  "version": "0.0.0",
+  "private": true,
+  "description": "MCP server for Chrome DevTools CSS inspection",
+  "type": "module",
+  "bin": {
+    "devtoolcss-mcp": "./dist/index.js"
+  },
+  "scripts": {
+    "inspect": "npx @modelcontextprotocol/inspector node dist/index.js",
+    "build": "tsc && chmod +x dist/index.js"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.22.0",
+    "ws": "^8.18.3",
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.5",
+    "@types/ws": "^8.5.13",
+    "typescript": "^5.9.3"
+  }
+}
