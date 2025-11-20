@@ -160,19 +160,14 @@ export class DevToolCSSMCPServer {
             .number()
             .optional()
             .describe("Maximum line length (default: 200)"),
-          maxChars: z
-            .number()
-            .optional()
-            .describe("Maximum total characters (default: 100000)"),
         },
       },
-      async ({ node, maxDepth, maxLineLength, maxChars }) => {
+      async ({ node, maxDepth, maxLineLength }) => {
         const result = await this.wsServer.sendRequest({
           tool: "getOuterHTML",
           node,
           maxDepth,
           maxLineLength,
-          maxChars,
         });
         return {
           content: [{ type: "text", text: JSON.stringify(result, null, 2) }],

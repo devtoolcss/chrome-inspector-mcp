@@ -94,25 +94,15 @@ async function processRequest(
 
     case "getOuterHTML": {
       // some safe defaults
-      const {
-        node: uid,
-        maxDepth = 3,
-        maxLineLength = 200,
-        maxChars = 100000,
-      } = request;
+      const { node: uid, maxDepth = 3, maxLineLength = 200 } = request;
       const node = nodeManager.getNode(uid, inspector);
       if (!node) {
         throw new Error(`Node not found for: ${uid}`);
-      } else if (!node.tracked) {
-        throw new Error(`Node is no longer existed for: ${uid}`);
+      } else if (!(node instanceof InspectorElement)) {
+        throw new Error(`Non-element nodes do not support styles for: ${uid}`);
       }
       // Apply depth and line length controls if provided
-      const html = truncateHTML(
-        node._docNode,
-        maxDepth,
-        maxLineLength,
-        maxChars,
-      );
+      const html = truncateHTML(node._docNode, maxDepth, maxLineLength);
       console.log("serveRequest - getOuterHTML html:", html);
       return { outerHTML: html };
     }

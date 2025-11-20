@@ -6,37 +6,15 @@ interface StructureSummary {
   totalDepth: number;
 }
 
-/**
- * Truncates HTML based on depth and line length controls
- * @param node - The DOM node to truncate
- * @param maxDepth - Maximum nesting depth of tags to include
- * @param maxLineLength - Maximum length of each line
- * @param maxChars - Maximum number of characters
- * @returns Truncated HTML
- */
 export function truncateHTML(
-  node: Node,
+  element: Element,
   maxDepth?: number,
   maxLineLength?: number,
-  maxChars?: number,
 ): string {
-  let result: Node = node.cloneNode(true);
-
-  // Truncate by depth
-  if (maxDepth !== undefined && maxDepth > 0) {
-    for (let depth = maxDepth; depth > 0; depth--) {
-      // has to use original node each time to ensure summary is correct
-      let truncated = truncateByDepth(node, depth);
-      let html = (truncated as Element).outerHTML || truncated.textContent;
-      if (maxChars === undefined || (html && html.length < maxChars)) {
-        result = truncated;
-        break;
-      }
-    }
-  }
+  let pruned = truncateByDepth(element, maxDepth) as Element;
 
   // Get HTML string
-  let html = (result as Element).outerHTML || result.textContent || "";
+  let html = pruned.outerHTML;
   html = beautify.html(html, {
     indent_size: 2,
     wrap_line_length: 0, // Don't wrap - let truncateByLineLength handle it
