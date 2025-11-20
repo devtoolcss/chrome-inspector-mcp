@@ -16,8 +16,6 @@ export function filterMatchedStyles(
     appliedOnly?: boolean;
   },
 ): ParsedCSS {
-  // Compile regex patterns if provided
-
   if (filter.selectors) {
     const selectorRegexes = filter.selectors
       ? filter.selectors.map((pattern) => new RegExp(pattern))
@@ -63,7 +61,7 @@ export function filterMatchedStyles(
   if (filter.properties) {
     const propertiesSet = new Set(filter.properties);
     const filterFn = (decl: ParsedCSSPropertyValue): boolean =>
-      propertiesSet.has(decl.name);
+      Array.from(propertiesSet).some((prop) => decl.name.includes(prop));
     filterAllProperties(styles, filterFn);
   }
 
