@@ -1,20 +1,33 @@
 import beautify from "js-beautify";
+
+interface StructureSummary {
+  elements: number;
+  textNodes: number;
+  totalDepth: number;
+}
+
 /**
  * Truncates HTML based on depth and line length controls
- * @param {Node} node - The DOM node to truncate
- * @param {number} [maxDepth] - Maximum nesting depth of tags to include
- * @param {number} [maxLineLength] - Maximum length of each line
- * @returns {string} Truncated HTML
+ * @param node - The DOM node to truncate
+ * @param maxDepth - Maximum nesting depth of tags to include
+ * @param maxLineLength - Maximum length of each line
+ * @param maxChars - Maximum number of characters
+ * @returns Truncated HTML
  */
-export function truncateHTML(node, maxDepth, maxLineLength, maxChars) {
-  let result = node.cloneNode(true);
+export function truncateHTML(
+  node: Node,
+  maxDepth?: number,
+  maxLineLength?: number,
+  maxChars?: number,
+): string {
+  let result: Node = node.cloneNode(true);
 
   // Truncate by depth
-  if (maxDepth > 0) {
+  if (maxDepth !== undefined && maxDepth > 0) {
     for (let depth = maxDepth; depth > 0; depth--) {
       // has to use original node each time to ensure summary is correct
       let truncated = truncateByDepth(node, depth);
-      let html = truncated.outerHTML || truncated.textContent;
+      let html = (truncated as Element).outerHTML || truncated.textContent;
       if (maxChars === undefined || (html && html.length < maxChars)) {
         result = truncated;
         break;
@@ -23,7 +36,7 @@ export function truncateHTML(node, maxDepth, maxLineLength, maxChars) {
   }
 
   // Get HTML string
-  let html = result.outerHTML || result.textContent;
+  let html = (result as Element).outerHTML || result.textContent || "";
   html = beautify.html(html, {
     indent_size: 2,
     wrap_line_length: 0, // Don't wrap - let truncateByLineLength handle it
@@ -40,17 +53,17 @@ export function truncateHTML(node, maxDepth, maxLineLength, maxChars) {
 
 /**
  * Counts the structure of remaining nodes
- * @param {Node} node - The DOM node to analyze
- * @returns {Object} Summary of node counts
+ * @param node - The DOM node to analyze
+ * @returns Summary of node counts
  */
-function summarizeRemainingStructure(node) {
-  const summary = {
+function summarizeRemainingStructure(node: Node): StructureSummary {
+  const summary: StructureSummary = {
     elements: 0,
     textNodes: 0,
     totalDepth: 0,
   };
 
-  function traverse(n, depth) {
+  function traverse(n: Node, depth: number): void {
     summary.totalDepth = Math.max(summary.totalDepth, depth);
 
     for (let child of n.childNodes) {
@@ -59,7 +72,7 @@ function summarizeRemainingStructure(node) {
         traverse(child, depth + 1);
       } else if (
         child.nodeType === Node.TEXT_NODE &&
-        child.textContent.trim()
+        child.textContent?.trim()
       ) {
         summary.textNodes++;
       }
@@ -72,11 +85,11 @@ function summarizeRemainingStructure(node) {
 
 /**
  * Truncates a DOM node by maximum nesting depth
- * @param {Node} node - The DOM node to truncate
- * @param {number} maxDepth - Maximum depth to traverse
- * @returns {Node} Cloned and truncated node
+ * @param node - The DOM node to truncate
+ * @param maxDepth - Maximum depth to traverse
+ * @returns Cloned and truncated node
  */
-function truncateByDepth(node, maxDepth) {
+function truncateByDepth(node: Node, maxDepth: number): Node {
   // Clone the node without children
   const clone = node.cloneNode(false);
 
@@ -86,7 +99,7 @@ function truncateByDepth(node, maxDepth) {
       const summary = summarizeRemainingStructure(node);
       const summaryText = `... ${summary.elements} more element(s), ${summary.textNodes} text node(s), max depth +${summary.totalDepth}`;
       if (summary.totalDepth > 0)
-        clone.appendChild(document.createComment(summaryText));
+        (clone as Element).appendChild(document.createComment(summaryText));
     }
     return clone;
   }
@@ -110,11 +123,11 @@ function truncateByDepth(node, maxDepth) {
 
 /**
  * Truncates each line of text to a maximum length
- * @param {string} text - The text to truncate
- * @param {number} maxLineLength - Maximum length per line
- * @returns {string} Text with truncated lines
+ * @param text - The text to truncate
+ * @param maxLineLength - Maximum length per line
+ * @returns Text with truncated lines
  */
-function truncateByLineLength(text, maxLineLength) {
+function truncateByLineLength(text: string, maxLineLength: number): string {
   const lines = text.split("\n");
   return lines
     .map((line) =>

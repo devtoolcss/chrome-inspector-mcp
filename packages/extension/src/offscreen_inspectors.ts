@@ -4,11 +4,18 @@ import { evaluateDOMExpression } from "./DOMExpression.js";
 
 import { NodeUidManager } from "./NodeUidManager.js";
 import { InspectorManager } from "./InspectorManager.js";
+import { InspectorElement } from "chrome-inspector";
+
+interface ToolRequest {
+  tool: string;
+  tabId: number;
+  [key: string]: any;
+}
 
 const inspectorManager = new InspectorManager();
 const nodeManager = new NodeUidManager();
 
-async function processRequest(request) {
+async function processRequest(request: ToolRequest): Promise<any> {
   console.log("processRequest - request:", request);
   const inspector =
     inspectorManager.get(request.tabId) ??
@@ -37,6 +44,10 @@ async function processRequest(request) {
       const node = nodeManager.getNode(uid, inspector);
       if (!node) {
         throw new Error(`Node not found for uid: ${uid}`);
+      } else if (!(node instanceof InspectorElement)) {
+        throw new Error(
+          `Non-element nodes do not support styles for uid: ${uid}`,
+        );
       }
       const options = {
         parseOptions: { removeUnusedVar },
@@ -62,14 +73,19 @@ async function processRequest(request) {
     }
 
     case "getComputedStyle": {
-      const node = nodeManager.getNode(request.uid, inspector);
+      const { uid, properties = [] } = request;
+      const node = nodeManager.getNode(uid, inspector);
       if (!node) {
-        throw new Error("Node not found for uid: " + request.uid);
+        throw new Error("Node not found for uid: " + uid);
+      } else if (!(node instanceof InspectorElement)) {
+        throw new Error(
+          `Non-element nodes do not support styles for uid: ${uid}`,
+        );
       }
 
       const styles = await node.getComputedStyle();
-      const filtered = {};
-      request.properties.map((prop) => {
+      const filtered: Record<string, string> = {};
+      properties.map((prop: string) => {
         filtered[prop] = styles[prop];
       });
       console.log("serveRequest - getComputedStyle styles:", filtered);
@@ -112,9 +128,9 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
 
   switch (msg.event) {
     case "REQUEST":
-      processRequest(msg.request)
+      processRequest(msg.request!)
         .then(sendResponse)
-        .catch((error) => {
+        .catch((error: any) => {
           sendResponse({ error: error.message || String(error) });
         });
       return true; // Keep the message channel open for async response

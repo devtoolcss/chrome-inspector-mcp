@@ -5,7 +5,16 @@
 
 import { getAbsoluteXPath } from "./xpath.js";
 
-function sendSelector() {
+interface EvalExceptionInfo {
+  isException: boolean;
+  code?: string;
+  description?: string;
+  details?: unknown[];
+  isError?: boolean;
+  value?: string;
+}
+
+function sendSelector(): void {
   // TODO: debug mode
   const expression = `
 (function() {
@@ -23,7 +32,7 @@ function sendSelector() {
   chrome.devtools.inspectedWindow.eval(
     expression,
     {},
-    (result, exceptionInfo) => {
+    (result: string | undefined, exceptionInfo?: EvalExceptionInfo) => {
       if (result) {
         chrome.runtime.sendMessage({
           receiver: "offscreen",

@@ -18,8 +18,8 @@ importers:
   packages/extension:
     dependencies:
       chrome-inspector:
-        specifier: ^1.0.6
-        version: 1.0.6
+        specifier: ^1.0.7
+        version: 1.0.7
       js-beautify:
         specifier: ^1.15.4
         version: 1.15.4
@@ -305,8 +305,8 @@ packages:
     resolution: {integrity: sha512-Qgzu8kfBvo+cA4962jnP1KkS6Dop5NS6g7R5LFYJr4b8Ub94PPQXUksCw9PvXoeXPRRddRNC5C1JQUR2SMGtnA==}
     engines: {node: '>= 14.16.0'}
 
-  chrome-inspector@1.0.6:
-    resolution: {integrity: sha512-5OhOccte20uGlI2WHqhtfOq6/NX3wTCmogfjUKqqfpLu6Ikp+0cjdfSmjibPmqYOW10BsUAQiQv8ACna+jfJOw==}
+  chrome-inspector@1.0.7:
+    resolution: {integrity: sha512-A13EiK6whFk4i4n8c/J6pa/ARUEOe8lSqZUQfcRaY5+tmSVd5OQITWW4/u2Wdb59gUQC2WvZZFHyn7jjR10zig==}
 
   color-convert@2.0.1:
     resolution: {integrity: sha512-RRECPsj7iu/xb5oKYcsFHSppFNnsj/52OVTRKb4zP5onXwVF3zVmmToNcOfGC+CRDpfK/U584fMg38ZHCaElKQ==}
@@ -793,7 +793,7 @@ snapshots:
     dependencies:
       readdirp: 4.1.2
 
-  chrome-inspector@1.0.6:
+  chrome-inspector@1.0.7:
     dependencies:
       '@devtoolcss/parser': 1.0.1
       jsdom: 27.2.0

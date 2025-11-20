@@ -1,6 +1,9 @@
-function splitExpression(expr) {
+import type { Inspector, InspectorNode } from "chrome-inspector";
+import type { NodeUidManager } from "./NodeUidManager.js";
+
+function splitExpression(expr: string): string[] {
   if (expr[0] !== ".") throw new Error("Expression must start with a dot");
-  const parts = [];
+  const parts: string[] = [];
   let current = "";
   let inSingle = false,
     inDouble = false,
@@ -42,7 +45,7 @@ function splitExpression(expr) {
   return parts;
 }
 
-function evalMethods(target, expr) {
+function evalMethods(target: any, expr: string): any {
   const operations = splitExpression(expr);
 
   for (const op of operations) {
@@ -66,7 +69,7 @@ function evalMethods(target, expr) {
     } else {
       // handle property access e.g. .parentNode, [0]
       const accessorStr = op.startsWith(".") ? op.slice(1) : op.slice(1, -1);
-      const accessor = !isNaN(Number(accessorStr))
+      const accessor: string | number = !isNaN(Number(accessorStr))
         ? Number(accessorStr)
         : accessorStr;
       const field = target[accessor];
@@ -77,10 +80,10 @@ function evalMethods(target, expr) {
 }
 
 export async function evaluateDOMExpression(
-  expression,
-  inspector,
-  nodeManager,
-) {
+  expression: string,
+  inspector: Inspector,
+  nodeManager: NodeUidManager,
+): Promise<{ uids: string[] }> {
   expression = expression.trim();
   const targetNodeName = expression.split(".")[0];
   const targetNode = nodeManager.getNode(targetNodeName, inspector);
@@ -96,7 +99,7 @@ export async function evaluateDOMExpression(
     const result = evalMethods(targetNode, remainingExpression);
 
     // Normalize result to array
-    let nodes;
+    let nodes: InspectorNode[];
     if (result === null || result === undefined) {
       nodes = [];
     } else if (Array.isArray(result)) {
@@ -107,7 +110,7 @@ export async function evaluateDOMExpression(
 
     const uids = nodes.map((node) => nodeManager.setNode(node));
     return { uids };
-  } catch (error) {
+  } catch (error: any) {
     throw new Error(`Failed to evaluate "${expression}": ${error.message}`);
   }
 }

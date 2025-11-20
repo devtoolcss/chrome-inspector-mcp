@@ -1,21 +1,30 @@
+import type { Inspector, InspectorNode } from "chrome-inspector";
+
 // generate and record uids for node.
 export class NodeUidManager {
+  private _nodeCounters: Map<string, number>;
+  private _idToRef: Map<string, WeakRef<InspectorNode>>;
+  private _nodeToId: WeakMap<InspectorNode, string>;
+
   constructor() {
     this._nodeCounters = new Map(); // nodeName -> counter
     this._idToRef = new Map(); // id -> WeakRef(node)
     this._nodeToId = new WeakMap(); // node -> id
   }
 
-  generateId(node) {
+  generateId(node: InspectorNode): string {
     const nodeName = node.nodeName.toLowerCase();
     const counter = this._nodeCounters.get(nodeName) || 0;
     this._nodeCounters.set(nodeName, counter + 1);
     return `${nodeName}_${counter}`;
   }
 
-  setNode(node) {
+  setNode(node: InspectorNode): string {
+    if (!node.tracked) {
+      throw new Error("Cannot record untracked node");
+    }
     if (this._nodeToId.has(node)) {
-      return this._nodeToId.get(node);
+      return this._nodeToId.get(node)!;
     }
     const id = this.generateId(node);
     this._idToRef.set(id, new WeakRef(node));
@@ -23,7 +32,7 @@ export class NodeUidManager {
     return id;
   }
 
-  getNode(uid, inspector) {
+  getNode(uid: string, inspector: Inspector): InspectorNode | undefined {
     // predefined
     if (uid === "document") return inspector.document;
     if (uid === "$0") return inspector.$0;
@@ -36,10 +45,10 @@ export class NodeUidManager {
       // Node GC'd, clean up stale entry
       this._idToRef.delete(uid);
     }
-    return node;
+    return node.tracked ? node : undefined;
   }
 
-  cleanUp() {
+  cleanUp(): void {
     // FIXME: didn't really cleanup deleted inspector's nodes
     for (const [id, ref] of this._idToRef.entries()) {
       if (ref.deref() === undefined) {

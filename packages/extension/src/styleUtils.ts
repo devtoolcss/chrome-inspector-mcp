@@ -1,33 +1,48 @@
+import type { InspectorElement, ParsedCSS } from "chrome-inspector";
+
+type ParsedCSSPropertyValue = ParsedCSS["inline"][0];
+type ParsedCSSRule = ParsedCSS["matched"][0];
 /**
  * Filters matched styles response to reduce size
- * @param {Object} styles - The matched styles object from chrome-inspector
- * @param {Object} filter - Filter options
- * @param {string[]} [filter.selectors] - Regex pattern for selector matching in matched and pseudoElements
- * @param {string[]} [filter.properties] - Properties to include rules with matching properties
- * @param {boolean} [filter.appliedOnly] - If true, only include applied properties
- * @returns {Object} Filtered matched styles
+ * @param styles - The matched styles object from chrome-inspector
+ * @param filter - Filter options
+ * @returns Filtered matched styles
  */
-export function filterMatchedStyles(styles, filter) {
+export function filterMatchedStyles(
+  styles: ParsedCSS,
+  filter: {
+    selectors?: string[];
+    properties?: string[];
+    appliedOnly?: boolean;
+  },
+): ParsedCSS {
   // Compile regex patterns if provided
 
   if (filter.selectors) {
     const selectorRegexes = filter.selectors
       ? filter.selectors.map((pattern) => new RegExp(pattern))
       : null;
-    const filterRulesBySelectors = (rules) => {
+    const filterRulesBySelectors = (
+      rules: ParsedCSSRule[],
+    ): ParsedCSSRule[] => {
       return rules.filter((rule) => {
-        return selectorRegexes.some((regex) =>
+        return selectorRegexes!.some((regex) =>
           regex.test(rule.matchedSelectors.join(", ")),
         );
       });
     };
-    styles.matchedCSSRules = filterRulesBySelectors(styles.matchedCSSRules);
+    styles.matched = filterRulesBySelectors(styles.matched);
     styles.pseudoElements = filterRulesBySelectors(styles.pseudoElements);
   }
 
-  const filterAllProperties = (styles, filter) => {
-    const filterProperties = (properties) => {
-      return properties.filter(filter);
+  const filterAllProperties = (
+    styles: ParsedCSS,
+    filterFn: (decl: ParsedCSSPropertyValue) => boolean,
+  ): void => {
+    const filterProperties = (
+      properties: ParsedCSSPropertyValue[],
+    ): ParsedCSSPropertyValue[] => {
+      return properties.filter(filterFn);
     };
     for (const parentCSS of styles.inherited) {
       parentCSS.inline = filterProperties(parentCSS.inline);
@@ -36,7 +51,7 @@ export function filterMatchedStyles(styles, filter) {
       }
     }
     styles.attributes = filterProperties(styles.attributes);
-    for (const rule of styles.matchedCSSRules) {
+    for (const rule of styles.matched) {
       rule.properties = filterProperties(rule.properties);
     }
     for (const rule of styles.pseudoElements) {
@@ -47,22 +62,39 @@ export function filterMatchedStyles(styles, filter) {
 
   if (filter.properties) {
     const propertiesSet = new Set(filter.properties);
-    const filter = (decl) => propertiesSet.has(decl.name);
-    filterAllProperties(styles, filter);
+    const filterFn = (decl: ParsedCSSPropertyValue): boolean =>
+      propertiesSet.has(decl.name);
+    filterAllProperties(styles, filterFn);
   }
 
   if (filter.appliedOnly) {
-    const filter = (decl) => decl.applied === true;
-    filterAllProperties(styles, filter);
+    const filterFn = (decl: ParsedCSSPropertyValue): boolean =>
+      decl.applied === true;
+    filterAllProperties(styles, filterFn);
   }
 
   return styles;
 }
 
-export function toStyleSheetText(styles, element, commentConfig = {}) {
+interface CommentConfig {
+  origin?: boolean;
+  matchedSelectors?: boolean;
+  applied?: boolean;
+}
+
+export function toStyleSheetText(
+  styles: ParsedCSS,
+  element: InspectorElement,
+  commentConfig: CommentConfig = {},
+): string {
   let cssText = "";
 
-  const toCSSRuleText = (rule) => {
+  const toCSSRuleText = (rule: {
+    allSelectors: string[];
+    matchedSelectors: string[];
+    properties: ParsedCSSPropertyValue[];
+    origin?: string;
+  }): string => {
     const allSelectorsStr = rule.allSelectors.join(", ");
     const matchedSelectorsStr = rule.matchedSelectors.join(", ");
     let css = "";
@@ -125,10 +157,15 @@ export function toStyleSheetText(styles, element, commentConfig = {}) {
     )
       continue;
 
-    const getParentSelector = (element, distance) => {
-      let parentNode = element;
+    const getParentSelector = (
+      element: InspectorElement,
+      distance: number,
+    ): string => {
+      let parentNode: InspectorElement = element;
       for (let i = 0; i < distance; i++) {
-        parentNode = parentNode.parentNode;
+        if (parentNode.parentNode === null)
+          throw new Error("getParentSelector: No parent node");
+        parentNode = parentNode.parentNode as InspectorElement;
       }
       let parentSelector = parentNode.nodeName.toLowerCase();
       if (parentNode.id) {

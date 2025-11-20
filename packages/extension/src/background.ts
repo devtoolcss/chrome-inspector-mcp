@@ -1,4 +1,16 @@
-/// <reference types="chrome"/>
+interface Settings {
+  host?: string;
+  port?: number;
+  pollingEnabled?: boolean;
+  pollingInterval?: number;
+}
+
+interface ToolRequest {
+  id: string;
+  tabId?: number;
+  tool: string;
+  [key: string]: any;
+}
 
 // Keep service worker alive
 // https://stackoverflow.com/a/66618269
@@ -9,17 +21,17 @@ chrome.runtime.onStartup.addListener(keepAlive);
 keepAlive();
 
 // WebSocket connection state
-let ws = null;
-let settings = {
+let ws: WebSocket | null = null;
+let settings: Settings = {
   host: "127.0.0.1",
   port: 9333,
   pollingEnabled: true,
   pollingInterval: 2000, // 2 seconds
 };
 
-let inspectedTabId = null;
+let inspectedTabId: number | null = null;
 
-async function getActiveTabId() {
+async function getActiveTabId(): Promise<number> {
   const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
   const activeTab = tabs[0];
   if (!activeTab) {
@@ -73,28 +85,28 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
       chrome.debugger
         .sendCommand(msg.target, msg.method, msg.params)
         .then((result) => sendResponse({ result }))
-        .catch((error) => sendResponse({ error: error.message }));
+        .catch((error: Error) => sendResponse({ error: error.message }));
       break;
     case "DEBUGGER_ATTACH":
       chrome.debugger
         .attach(msg.target, "1.3")
         .then((result) => sendResponse({ result }))
-        .catch((error) => sendResponse({ error: error.message }));
+        .catch((error: Error) => sendResponse({ error: error.message }));
       break;
     case "DEBUGGER_DETACH":
       chrome.debugger
         .detach(msg.target)
         .then((result) => sendResponse({ result }))
-        .catch((error) => sendResponse({ error: error.message }));
+        .catch((error: Error) => sendResponse({ error: error.message }));
       break;
     case "SET_INSPECTED_TAB_ID":
-      inspectedTabId = msg.tabId;
+      inspectedTabId = msg.tabId!;
       break;
   }
   return true; // Keep the message channel open for async response
 });
 
-function formatRelativeTime(timestamp) {
+function formatRelativeTime(timestamp: number): string {
   const diffMs = Date.now() - timestamp;
   const diffSec = Math.floor(diffMs / 1000);
   const hr = Math.floor(diffSec / 3600);
@@ -107,7 +119,7 @@ function formatRelativeTime(timestamp) {
 }
 
 // Main serving logic
-async function serveRequest(request) {
+async function serveRequest(request: ToolRequest): Promise<any> {
   if (request.tool === "getTabs") {
     const tabs = await chrome.tabs.query({});
     return {
@@ -116,7 +128,7 @@ async function serveRequest(request) {
         title: tab.title,
         url: tab.url,
         active: tab.active ? true : undefined,
-        lastAccessed: formatRelativeTime(tab.lastAccessed),
+        lastAccessed: formatRelativeTime(tab.lastAccessed!),
       })),
     };
   }
@@ -143,8 +155,8 @@ chrome.storage.onChanged.addListener((changes, areaName) => {
 });
 
 // Load settings from storage
-async function loadSettings() {
-  const stored = await chrome.storage.sync.get([
+async function loadSettings(): Promise<void> {
+  const stored: Settings = await chrome.storage.sync.get([
     "host",
     "port",
     "pollingEnabled",
@@ -160,7 +172,7 @@ async function loadSettings() {
 }
 
 // Check if server is available using HTTP polling (silent on failure)
-async function checkServerAvailability() {
+async function checkServerAvailability(): Promise<boolean> {
   if (!settings.pollingEnabled) {
     return false;
   }
@@ -188,7 +200,7 @@ function connectWebSocket() {
   ws = new WebSocket(wsUrl);
 
   const cleanUp = () => {
-    ws.close();
+    ws!.close();
     ws = null; // remove the only reference, effectively cleanup
   };
 
@@ -196,24 +208,24 @@ function connectWebSocket() {
     console.log("[WS] Connected successfully");
   };
 
-  ws.onmessage = async (event) => {
+  ws.onmessage = async (event): Promise<void> => {
     console.log("[WS] Request received:", event.data);
-    let req;
+    let req: ToolRequest;
     try {
-      req = JSON.parse(event.data);
-    } catch (e) {
+      req = JSON.parse(event.data as string);
+    } catch (e: any) {
       console.error(`[WS] Failed to parse message ${event.data}:`, e);
-      ws.send(JSON.stringify({ error: e.message || String(e) }));
+      ws!.send(JSON.stringify({ error: e.message || String(e) }));
       return;
     }
 
     try {
       const response = await serveRequest(req);
       console.log("response:", response);
-      ws.send(JSON.stringify({ id: req.id, ...response }));
-    } catch (e) {
+      ws!.send(JSON.stringify({ id: req.id, ...response }));
+    } catch (e: any) {
       console.log(`[WS] Failed to serve message ${event.data}:`, e);
-      ws.send(JSON.stringify({ id: req.id, error: e.message || String(e) }));
+      ws!.send(JSON.stringify({ id: req.id, error: e.message || String(e) }));
     }
   };
 
@@ -229,7 +241,7 @@ function connectWebSocket() {
 }
 
 // Poll and connect
-async function pollAndConnect() {
+async function pollAndConnect(): Promise<void> {
   while (settings.pollingEnabled) {
     const available = await checkServerAvailability();
 
@@ -243,7 +255,7 @@ async function pollAndConnect() {
   }
 }
 
-async function main() {
+async function main(): Promise<void> {
   await loadSettings();
   await chrome.offscreen.createDocument({
     url: "offscreen_inspectors.html",
