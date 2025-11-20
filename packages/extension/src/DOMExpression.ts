@@ -83,7 +83,7 @@ export async function evaluateDOMExpression(
   expression: string,
   inspector: Inspector,
   nodeManager: NodeUidManager,
-): Promise<{ uids: string[] }> {
+): Promise<{ nodes: string[] }> {
   expression = expression.trim();
   const targetNodeName = expression.split(".")[0];
   const targetNode = nodeManager.getNode(targetNodeName, inspector);
@@ -94,7 +94,7 @@ export async function evaluateDOMExpression(
   const remainingExpression = expression.slice(targetNodeName.length);
   // TODO: validate remainingExpression to ensure safety
   if (remainingExpression.length === 0) {
-    return { uids: [nodeManager.setNode(targetNode)] };
+    return { nodes: [nodeManager.setNode(targetNode)] };
   }
 
   try {
@@ -112,7 +112,7 @@ export async function evaluateDOMExpression(
     }
 
     const uids = nodes.map((node) => nodeManager.setNode(node));
-    return { uids };
+    return { nodes: uids };
   } catch (error: any) {
     throw new Error(`Failed to evaluate "${expression}": ${error.message}`);
   }

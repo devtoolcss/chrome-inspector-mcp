@@ -37,7 +37,7 @@ async function processRequest(
 
     case "getMatchedStyles": {
       const {
-        uid,
+        node: uid,
         selectors,
         properties,
         appliedOnly = false,
@@ -45,11 +45,9 @@ async function processRequest(
       } = request;
       const node = nodeManager.getNode(uid, inspector);
       if (!node) {
-        throw new Error(`Node not found for uid: ${uid}`);
+        throw new Error(`Node not found for: ${uid}`);
       } else if (!(node instanceof InspectorElement)) {
-        throw new Error(
-          `Non-element nodes do not support styles for uid: ${uid}`,
-        );
+        throw new Error(`Non-element nodes do not support styles for: ${uid}`);
       }
       const options = {
         parseOptions: { removeUnusedVar },
@@ -77,14 +75,12 @@ async function processRequest(
     }
 
     case "getComputedStyle": {
-      const { uid, properties = [] } = request;
+      const { node: uid, properties = [] } = request;
       const node = nodeManager.getNode(uid, inspector);
       if (!node) {
-        throw new Error("Node not found for uid: " + uid);
+        throw new Error("Node not found for:" + uid);
       } else if (!(node instanceof InspectorElement)) {
-        throw new Error(
-          `Non-element nodes do not support styles for uid: ${uid}`,
-        );
+        throw new Error(`Non-element nodes do not support styles for: ${uid}`);
       }
 
       const styles = await node.getComputedStyle();
@@ -99,16 +95,16 @@ async function processRequest(
     case "getOuterHTML": {
       // some safe defaults
       const {
-        uid,
+        node: uid,
         maxDepth = 3,
         maxLineLength = 200,
         maxChars = 100000,
       } = request;
       const node = nodeManager.getNode(uid, inspector);
       if (!node) {
-        throw new Error(`Node not found for uid: ${uid}`);
+        throw new Error(`Node not found for: ${uid}`);
       } else if (!node.tracked) {
-        throw new Error(`Node is no longer existed for uid: ${uid}`);
+        throw new Error(`Node is no longer existed for: ${uid}`);
       }
       // Apply depth and line length controls if provided
       const html = truncateHTML(

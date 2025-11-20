@@ -89,7 +89,7 @@ export class DevToolCSSMCPServer {
       "getMatchedStyles",
       {
         inputSchema: {
-          uid: z.string().describe("Node unique identifier"),
+          node: z.string().describe("Node identifier"),
           selectors: z
             .array(z.string())
             .optional()
@@ -108,10 +108,10 @@ export class DevToolCSSMCPServer {
             .describe("Remove unused CSS variables (default: true)"),
         },
       },
-      async ({ uid, selectors, properties, appliedOnly, removeUnusedVar }) => {
+      async ({ node, selectors, properties, appliedOnly, removeUnusedVar }) => {
         const result = await this.wsServer.sendRequest({
           tool: "getMatchedStyles",
-          uid,
+          node,
           selectors,
           properties,
           appliedOnly,
@@ -128,16 +128,16 @@ export class DevToolCSSMCPServer {
       "getComputedStyle",
       {
         inputSchema: {
-          uid: z.string().describe("Node unique identifier"),
+          node: z.string().describe("Node identifier"),
           properties: z
             .array(z.string())
             .describe("CSS properties to retrieve"),
         },
       },
-      async ({ uid, properties }) => {
+      async ({ node, properties }) => {
         const result = await this.wsServer.sendRequest({
           tool: "getComputedStyle",
-          uid,
+          node,
           properties: properties || [],
         });
         return {
@@ -151,7 +151,7 @@ export class DevToolCSSMCPServer {
       "getOuterHTML",
       {
         inputSchema: {
-          uid: z.string().describe("Node unique identifier"),
+          node: z.string().describe("Node identifier"),
           maxDepth: z
             .number()
             .optional()
@@ -166,10 +166,10 @@ export class DevToolCSSMCPServer {
             .describe("Maximum total characters (default: 100000)"),
         },
       },
-      async ({ uid, maxDepth, maxLineLength, maxChars }) => {
+      async ({ node, maxDepth, maxLineLength, maxChars }) => {
         const result = await this.wsServer.sendRequest({
           tool: "getOuterHTML",
-          uid,
+          node,
           maxDepth,
           maxLineLength,
           maxChars,
