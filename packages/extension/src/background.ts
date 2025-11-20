@@ -30,7 +30,9 @@ let settings: Settings = {
 };
 
 let inspectedTabId: number | null = null;
+let selectedTabId: number | null = null;
 
+/*
 async function getActiveTabId(): Promise<number> {
   const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
   const activeTab = tabs[0];
@@ -45,6 +47,7 @@ async function getActiveTabId(): Promise<number> {
   }
   return activeTab.id;
 }
+*/
 
 chrome.tabs.onRemoved.addListener((tabId, removeInfo) => {
   console.log(`Tab ${tabId} closed`);
@@ -131,16 +134,21 @@ async function serveRequest(request: ToolRequest): Promise<any> {
         lastAccessed: formatRelativeTime(tab.lastAccessed!),
       })),
     };
+  } else if (request.tool === "selectTab") {
+    const tabs = await chrome.tabs.query({});
+    const matchedTab = tabs.find((tab) => tab.id === request.tabId);
+    if (!matchedTab) {
+      throw new Error(`Tab with id ${request.tabId} not found`);
+    }
+    selectedTabId = request.tabId;
+    return { selectedTabId };
   }
 
-  // other inspector requests
-  if (request.tabId === undefined) {
-    request.tabId = await getActiveTabId();
-  }
   const response = await chrome.runtime.sendMessage({
     receiver: "offscreen",
     event: "REQUEST",
     request,
+    tabId: selectedTabId,
   });
   return response;
 }

@@ -8,18 +8,19 @@ import { InspectorElement } from "chrome-inspector";
 
 interface ToolRequest {
   tool: string;
-  tabId: number;
   [key: string]: any;
 }
 
 const inspectorManager = new InspectorManager();
 const nodeManager = new NodeUidManager();
 
-async function processRequest(request: ToolRequest): Promise<any> {
-  console.log("processRequest - request:", request);
+async function processRequest(
+  tabId: number,
+  request: ToolRequest,
+): Promise<any> {
+  console.log(`processRequest - tabId: ${tabId}, request:`, request);
   const inspector =
-    inspectorManager.get(request.tabId) ??
-    (await inspectorManager.create(request.tabId));
+    inspectorManager.get(tabId) ?? (await inspectorManager.create(tabId));
 
   switch (request.tool) {
     case "getNodes": {
@@ -128,7 +129,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
 
   switch (msg.event) {
     case "REQUEST":
-      processRequest(msg.request!)
+      processRequest(msg.tabId, msg.request)
         .then(sendResponse)
         .catch((error: any) => {
           sendResponse({ error: error.message || String(error) });
