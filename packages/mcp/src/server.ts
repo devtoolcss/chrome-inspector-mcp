@@ -150,9 +150,6 @@ export class DevToolCSSMCPServer {
     this.server.registerTool(
       "getOuterHTML",
       {
-        title: "Get Outer HTML",
-        description:
-          "Get the outer HTML of a DOM node with truncation controls",
         inputSchema: {
           uid: z.string().describe("Node unique identifier"),
           maxDepth: z
