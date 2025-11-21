@@ -152,6 +152,7 @@ export class ExtensionWebSocketServer {
       const originalReject = reject;
       resolve = (value: any) => {
         clearTimeout(timeout);
+        delete value.id;
         originalResolve(value);
       };
       reject = (error: Error) => {
