@@ -9,6 +9,8 @@ This redesign of DevTools MCP aims to enable agents to take over DevTools for co
 
 ## Demo
 
+https://github.com/user-attachments/assets/c880a415-f35a-4fc4-93c4-001030116b90
+
 ## Installation
 
 1. Install the extension from [Releases](https://github.com/devtoolcss/chrome-inspector-mcp/releases)
