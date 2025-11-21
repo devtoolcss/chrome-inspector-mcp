@@ -1,59 +1,55 @@
-## Inspector MCP
+# Chrome Inspector MCP
 
-The DevTools MCP for inspecting DOM elements and CSS rules
+This gives agents DOM Elements, CSS Rules, and Computed Style, the tools that `chrome-devtools-mcp` doesn't provide.
 
-This gives agents DOM Elements, CSS Rules, and Computed Style, the bread and butter for frontend development.
+This redesign of DevTools MCP aims to enable agents to take over DevTools for complex debugging. Any suggestions are welcomed. Current directions includes:
 
-Most Chrome DevTools Protocol (CDP) logics are in [chrome-inspector](https://github.com/devtoolcss/chrome-inspector), a programming interface wrapping CDP to DOM methods. This MCP aims to explore the optimal interface for LLMs to control DevTools for complex debugging.
+- Agent Ergonomics: Building directly on [Chrome DevTools Protocol (CDP)](https://chromedevtools.github.io/devtools-protocol/), designing for agent needs, not library constraints
+- Extensibility: Making it easy for users (and agents?) to hack and customize their own toolsets
 
-### Tools
+## Demo
 
-5 tools
+## Installation
 
-- `getTabs`
-- `getNodes`
-  - document, $0, or uid as variable (.getElementById)
-  - querySelector, parent, children[0], etc
-  - return uids
-- `getMatchedStyles` (optionally filter by selector, properties, appliedOnly)
-- `getComputedStyle` (must specify wanted attr array)
-- `getOuterHTML` (with depth/line lenght control)
+1. Install the extension from [Releases](https://github.com/devtoolcss/chrome-inspector-mcp/releases)
 
-**TODO**
+2. Add the following config to your MCP client:
 
-- auto detach, better config panel
+```json
+{
+  "mcpServers": {
+    "chrome-devtools": {
+      "command": "npx",
+      "args": ["-y", "chrome-inspector-mcp@latest"]
+    }
+  }
+}
+```
 
----
+## Tools
+
+- [`getTabs`](./tools.md#gettabs)
+- [`selectTab`](./tools.md#selecttabs)
+- [`getNodes`](./tools.md#getnodes)
+- [`getMatchedStyles`](./tools.md#getmatchedstyles)
+- [`getComputedStyle`](./tools.md#getcomputedstyle)
+- [`getOuterHTML`](./tools.md#getouterhtml)
+
+### TODO
 
 - console js & message
 - device emulation
 
-### Guidelines:
+### Guidelines
 
-1. Generalization (best to allow programmatic expression. best to only explain rules instead of full functionality.)
-2. Filtering (If raw output can be too large, we should have predefined filtering logic. This way, the tool's value is like a lib function that doesn't require LLM implement everytime)
-3. Minimal (Less is more. Less unneeded description, better response and longer use.)
+1. **Generalization**: Prefer taking programmatic expression. Let models code.
 
-## Archtecture
+2. **Filtering**: When raw output could be large, provide built-in filtering logic.
 
-chrome extension (ws polling) + stateful inspectors + lazy init
+## How it works
 
-### Connection
+When Chrome starts, the extension's background worker polls a specific port every few seconds. When the MCP server starts at the address they connect. By manifest v3, one background worker serves one profile, so the MCP server can access all its tabs (TODO: filtering).
 
-comparison between Extension API vs Remote Debugging Port
+Currently, the extension handles all DevTools logic and the MCP server is just a relay. Yet Chrome extension has many restrictions, so I planed to forward `chrome` API and keep things in MCP's Nodejs runtime following [playwright-mcp's design](https://github.com/microsoft/playwright-mcp/tree/main/extension).
 
-used by:
-browser devtools access:
-avaliable sites: except chrome://
-profile:
-XXX is debugging your browser
-
-in theory, Remote Debugging Port gives the most power, but its setup is also more inconvenient
-
----
-
-For Chrome Extensions, there are two ways to communicate with local process: ws+polling (extension as client) vs native messaging (server)
-
-Unlike [hangwin/mcp-chrome](https://github.com/hangwin/mcp-chrome), we opt for http polling + ws for easier maintaince. The polling usage should be marginal, you can also manually turn on/off.
-
-one profile is not intended for multiple persons to use simultaneously, so following chrome-extension design, one mcp per profile is good. for multi agent use, each agent can config its extension and mcp port.
+The inspection logic is implemented in [chrome-inspector](https://github.com/devtoolcss/chrome-inspector), a programming interface wrapping [CDP](https://chromedevtools.github.io/devtools-protocol/) to DOM methods.
