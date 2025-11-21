@@ -1,11 +1,11 @@
 # Chrome Inspector MCP
 
-This gives agents DOM Elements, CSS Rules, and Computed Style, the tools that `chrome-devtools-mcp` doesn't provide.
+This gives agents **DOM Elements**, **CSS Rules**, and **Computed Style**, the tools that `chrome-devtools-mcp` doesn't provide.
 
 This redesign of DevTools MCP aims to enable agents to take over DevTools for complex debugging. Any suggestions are welcomed. Current directions includes:
 
-- Agent Ergonomics: Building directly on [Chrome DevTools Protocol (CDP)](https://chromedevtools.github.io/devtools-protocol/), designing for agent needs, not library constraints
-- Extensibility: Making it easy for users (and agents?) to hack and customize their own toolsets
+- **Agent Ergonomics**: Building directly on [Chrome DevTools Protocol (CDP)](https://chromedevtools.github.io/devtools-protocol/), designing for agent needs, not library constraints
+- **Extensibility**: Making it easy for users (and agents?) to hack and customize their own toolsets
 
 ## Demo
 
