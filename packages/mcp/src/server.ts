@@ -118,8 +118,7 @@ export class DevToolCSSMCPServer {
           removeUnusedVar,
         });
         return {
-          content: [{ type: "text", text: JSON.stringify(result, null, 2) }],
-          structuredContent: result,
+          content: [{ type: "text", text: result.styles }],
         };
       },
     );
@@ -141,8 +140,10 @@ export class DevToolCSSMCPServer {
           properties: properties || [],
         });
         return {
-          content: [{ type: "text", text: JSON.stringify(result, null, 2) }],
-          structuredContent: result,
+          content: [
+            { type: "text", text: JSON.stringify(result.styles, null, 2) },
+          ],
+          structuredContent: result.styles,
         };
       },
     );
@@ -170,8 +171,7 @@ export class DevToolCSSMCPServer {
           maxLineLength,
         });
         return {
-          content: [{ type: "text", text: JSON.stringify(result, null, 2) }],
-          structuredContent: result,
+          content: [{ type: "text", text: result.outerHTML }],
         };
       },
     );
