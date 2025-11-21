@@ -1,5 +1,5 @@
 {
-  "name": "DevtoolCSS MCP",
+  "name": "Chrome Inspector MCP",
   "version": "0.0.0",
   "manifest_version": 3,
   "description": "Chrome extension with WebSocket polling to MCP server",
@@ -11,7 +11,7 @@
   "permissions": ["tabs", "storage", "debugger", "offscreen"],
   "action": {
     "default_popup": "popup.html",
-    "default_title": "DevtoolCSS MCP Settings"
+    "default_title": "Chrome Inspector MCP Settings"
   },
   "host_permissions": ["http://127.0.0.1/*", "ws://127.0.0.1/*"]
 }
