@@ -1,5 +1,5 @@
 {
-  "name": "@devtoolcss/mcp-extension",
+  "name": "chrome-inspector-mcp-extension",
   "version": "0.0.0",
   "private": true,
   "description": "Chrome extension with WebSocket polling to MCP server",
