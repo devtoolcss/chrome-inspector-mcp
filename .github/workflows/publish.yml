@@ -30,8 +30,8 @@ jobs:
         run: |
           pnpm install --frozen-lockfile && cd dist/ && zip -r ext.zip .
       - name: Move Extension Zip to Root
-        run: mv extension/dist/ext.zip ./chrome-inspector-mcp-${{ github.event.release.tag_name }}.zip
+        run: mv extension/dist/ext.zip ./chrome-inspector-mcp-ext-${{ github.event.release.tag_name }}.zip
       - name: Upload extension to GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          files: ./chrome-inspector-mcp-${{ github.event.release.tag_name }}.zip
+          files: ./chrome-inspector-mcp-ext-${{ github.event.release.tag_name }}.zip
