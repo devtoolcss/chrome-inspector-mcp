@@ -1,8 +1,25 @@
 {
   "name": "chrome-inspector-mcp",
   "version": "0.0.0",
-  "license": "MIT",
   "description": "MCP server for Chrome DevTools CSS inspection",
+  "license": "MIT",
+  "files": [
+    "dist/",
+    "README.md",
+    "LICENSE"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:devtoolcss/chrome-inspector-mcp.git"
+  },
+  "homepage": "https://github.com/devtoolcss/chrome-inspector-mcp#readme",
+  "keywords": [
+    "chrome",
+    "debugging",
+    "devtools",
+    "mcp",
+    "mcp-server"
+  ],
   "type": "module",
   "bin": {
     "chrome-inspector-mcp": "./dist/index.js"
