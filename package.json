@@ -1,6 +1,6 @@
 {
   "name": "chrome-inspector-mcp",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "MCP server for Chrome DevTools CSS inspection",
   "license": "MIT",
   "files": [

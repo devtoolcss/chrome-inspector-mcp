@@ -1,6 +1,6 @@
 {
   "name": "chrome-inspector-mcp-extension",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "private": true,
   "description": "Chrome extension with WebSocket polling to MCP server",
   "type": "module",
