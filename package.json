@@ -1,16 +1,24 @@
 {
-  "private": true,
-  "license": "MIT",
-  "workspaces": [
-    "packages/*"
-  ],
-  "scripts": {
-    "build": "pnpm -r build",
-    "format": "prettier --experimental-cli --write packages"
+  "name": "chrome-inspector-mcp",
+  "version": "0.0.0",
+  "description": "MCP server for Chrome DevTools CSS inspection",
+  "type": "module",
+  "bin": {
+    "chrome-inspector-mcp": "./dist/index.js"
   },
-  "packageManager": "pnpm@10.18.2+sha512.9fb969fa749b3ade6035e0f109f0b8a60b5d08a1a87fdf72e337da90dcc93336e2280ca4e44f2358a649b83c17959e9993e777c2080879f3801e6f0d999ad3dd",
+  "scripts": {
+    "inspect": "npx @modelcontextprotocol/inspector node dist/index.js",
+    "build": "tsc && chmod +x dist/index.js",
+    "prepare": "pnpm build"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.22.0",
+    "ws": "^8.18.3",
+    "zod": "^3.25.76"
+  },
   "devDependencies": {
-    "prettier": "^3.6.2",
+    "@types/node": "^22.10.5",
+    "@types/ws": "^8.5.13",
     "typescript": "^5.9.3"
   }
 }
