@@ -20,7 +20,7 @@ https://github.com/user-attachments/assets/c880a415-f35a-4fc4-93c4-001030116b90
 ```json
 {
   "mcpServers": {
-    "chrome-devtools": {
+    "chrome-inspector": {
       "command": "npx",
       "args": ["-y", "chrome-inspector-mcp@latest"]
     }
